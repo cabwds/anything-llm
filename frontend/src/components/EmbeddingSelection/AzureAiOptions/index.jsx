@@ -98,7 +98,7 @@ export default function AzureAiOptions({ settings }) {
                 type="text"
                 name="AzureTenantId"
                 className="border-none bg-theme-settings-input-bg text-white placeholder:text-theme-settings-input-placeholder text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
-                placeholder="to-fill"
+                placeholder="to-Fill"
                 defaultValue={settings?.AzureTenantId}
                 required={authMethod === "azuread"}
                 autoComplete="off"
