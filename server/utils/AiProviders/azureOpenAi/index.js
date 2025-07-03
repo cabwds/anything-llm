@@ -12,16 +12,62 @@ class AzureOpenAiLLM {
     const { AzureOpenAI } = require("openai");
     if (!process.env.AZURE_OPENAI_ENDPOINT)
       throw new Error("No Azure API endpoint was set.");
-    if (!process.env.AZURE_OPENAI_KEY)
-      throw new Error("No Azure API key was set.");
+
+    // Check if Azure AD authentication is configured
+    const hasAzureAD = !!(
+      process.env.AZURE_TENANT_ID &&
+      process.env.AZURE_CLIENT_ID &&
+      process.env.AZURE_CLIENT_SECRET &&
+      process.env.AZURE_ACCESS_SCOPE
+    );
+
+    // Check if API key authentication is configured
+    const hasApiKey = !!process.env.AZURE_OPENAI_KEY;
+
+    if (!hasAzureAD && !hasApiKey) {
+      throw new Error(
+        "No Azure authentication method configured. Either set AZURE_OPENAI_KEY for API key authentication, or set AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_ACCESS_SCOPE for Azure AD authentication."
+      );
+    }
 
     this.apiVersion = "2024-12-01-preview";
-    this.openai = new AzureOpenAI({
-      apiKey: process.env.AZURE_OPENAI_KEY,
+    
+    // Configure authentication
+    let authConfig = {
       apiVersion: this.apiVersion,
       endpoint: process.env.AZURE_OPENAI_ENDPOINT,
-    });
-    this.model = modelPreference ?? process.env.OPEN_MODEL_PREF;
+    };
+
+    if (hasAzureAD) {
+      // Use Azure AD authentication
+      const { DefaultAzureCredential, getBearerTokenProvider, ClientSecretCredential } = require("@azure/identity");
+      
+      let credential;
+      if (process.env.AZURE_CLIENT_SECRET) {
+        // Use Client Secret credential for service principal authentication
+        credential = new ClientSecretCredential(
+          process.env.AZURE_TENANT_ID,
+          process.env.AZURE_CLIENT_ID,
+          process.env.AZURE_CLIENT_SECRET
+        );
+      } else {
+        // Use Default Azure credential for managed identity or other methods
+        credential = new DefaultAzureCredential();
+      }
+
+      const scope = process.env.AZURE_ACCESS_SCOPE || "https://cognitiveservices.azure.com/.default";
+      const azureADTokenProvider = getBearerTokenProvider(credential, scope);
+      authConfig.azureADTokenProvider = azureADTokenProvider;
+      
+      this.#log("Using Azure AD authentication");
+    } else {
+      // Use API key authentication
+      authConfig.apiKey = process.env.AZURE_OPENAI_KEY;
+      this.#log("Using API key authentication");
+    }
+
+    this.openai = new AzureOpenAI(authConfig);
+    this.model = modelPreference ?? process.env.AZURE_OPENAI_MODEL ?? process.env.OPEN_MODEL_PREF;
     this.isOTypeModel =
       process.env.AZURE_OPENAI_MODEL_TYPE === "reasoning" || false;
     this.limits = {
@@ -33,7 +79,7 @@ class AzureOpenAiLLM {
     this.embedder = embedder ?? new NativeEmbedder();
     this.defaultTemp = 0.7;
     this.#log(
-      `Initialized. Model "${this.model}" @ ${this.promptWindowLimit()} tokens.\nAPI-Version: ${this.apiVersion}.\nModel Type: ${this.isOTypeModel ? "reasoning" : "default"}`
+      `Initialized. Model "${this.model}" @ ${this.promptWindowLimit()} tokens.\nAPI-Version: ${this.apiVersion}.\nModel Type: ${this.isOTypeModel ? "reasoning" : "default"}\nAuth: ${hasAzureAD ? "Azure AD" : "API Key"}`
     );
   }
 

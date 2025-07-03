@@ -98,9 +98,17 @@ class AgentHandler {
           throw new Error("TogetherAI API key must be provided to use agents.");
         break;
       case "azure":
-        if (!process.env.AZURE_OPENAI_ENDPOINT || !process.env.AZURE_OPENAI_KEY)
+        const hasAzureAD = !!(
+          process.env.AZURE_TENANT_ID &&
+          process.env.AZURE_CLIENT_ID &&
+          process.env.AZURE_CLIENT_SECRET &&
+          process.env.AZURE_ACCESS_SCOPE
+        );
+        const hasApiKey = !!process.env.AZURE_OPENAI_KEY;
+        
+        if (!process.env.AZURE_OPENAI_ENDPOINT || (!hasAzureAD && !hasApiKey))
           throw new Error(
-            "Azure OpenAI API endpoint and key must be provided to use agents."
+            "Azure OpenAI API endpoint and authentication method (API key or Azure AD) must be provided to use agents."
           );
         break;
       case "koboldcpp":

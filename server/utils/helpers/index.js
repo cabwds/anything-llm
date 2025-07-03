@@ -121,7 +121,15 @@ function getVectorDbClass(getExactly = null) {
  * @returns {BaseLLMProvider}
  */
 function getLLMProvider({ provider = null, model = null } = {}) {
-  const LLMSelection = provider ?? process.env.LLM_PROVIDER ?? "openai";
+  let LLMSelection = provider ?? process.env.LLM_PROVIDER ?? "openai";
+  
+  // Auto-detect Azure configuration: if Azure AD credentials are configured
+  // but LLM_PROVIDER is still set to openai (or not set), automatically use azure
+  if ((LLMSelection === "openai" || !process.env.LLM_PROVIDER) && isAzureConfigured()) {
+    console.log("Auto-detected Azure AD configuration, switching to Azure OpenAI provider");
+    LLMSelection = "azure";
+  }
+  
   const embedder = getEmbeddingEngineSelection();
 
   switch (LLMSelection) {
@@ -368,7 +376,7 @@ function getBaseLLMProviderModel({ provider = null } = {}) {
     case "openai":
       return process.env.OPEN_MODEL_PREF;
     case "azure":
-      return process.env.OPEN_MODEL_PREF;
+      return process.env.AZURE_OPENAI_MODEL ?? process.env.OPEN_MODEL_PREF;
     case "anthropic":
       return process.env.ANTHROPIC_MODEL_PREF;
     case "gemini":
@@ -424,6 +432,20 @@ function getBaseLLMProviderModel({ provider = null } = {}) {
   }
 }
 
+/**
+ * Checks if Azure AD authentication is properly configured
+ * @returns {boolean} true if Azure AD configuration is complete
+ */
+function isAzureConfigured() {
+  return !!(
+    process.env.AZURE_OPENAI_ENDPOINT &&
+    process.env.AZURE_TENANT_ID &&
+    process.env.AZURE_CLIENT_ID &&
+    process.env.AZURE_CLIENT_SECRET &&
+    process.env.AZURE_ACCESS_SCOPE
+  );
+}
+
 // Some models have lower restrictions on chars that can be encoded in a single pass
 // and by default we assume it can handle 1,000 chars, but some models use work with smaller
 // chars so here we can override that value when embedding information.
@@ -452,4 +474,5 @@ module.exports = {
   getBaseLLMProviderModel,
   getLLMProvider,
   toChunks,
+  isAzureConfigured,
 };

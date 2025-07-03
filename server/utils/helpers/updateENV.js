@@ -29,7 +29,7 @@ const KEY_MAPPING = {
   },
   AzureOpenAiKey: {
     envKey: "AZURE_OPENAI_KEY",
-    checks: [isNotEmpty],
+    checks: [],
   },
   AzureOpenAiModelPref: {
     envKey: "OPEN_MODEL_PREF",
@@ -47,6 +47,27 @@ const KEY_MAPPING = {
           ? null
           : "Invalid model type. Must be one of: default, reasoning.",
     ],
+  },
+  AzureOpenAiModel: {
+    envKey: "AZURE_OPENAI_MODEL",
+    checks: [isNotEmpty],
+  },
+  // Azure AD Authentication Settings
+  AzureTenantId: {
+    envKey: "AZURE_TENANT_ID",
+    checks: [],
+  },
+  AzureClientId: {
+    envKey: "AZURE_CLIENT_ID",
+    checks: [],
+  },
+  AzureClientSecret: {
+    envKey: "AZURE_CLIENT_SECRET",
+    checks: [],
+  },
+  AzureAccessScope: {
+    envKey: "AZURE_ACCESS_SCOPE",
+    checks: [],
   },
 
   // Anthropic Settings
