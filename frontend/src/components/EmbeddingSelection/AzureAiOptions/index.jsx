@@ -98,7 +98,7 @@ export default function AzureAiOptions({ settings }) {
                 type="text"
                 name="AzureTenantId"
                 className="border-none bg-theme-settings-input-bg text-white placeholder:text-theme-settings-input-placeholder text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
-                placeholder="67bff79e-7f91-4433-a8e5-c9252d2ddc1d"
+                placeholder="to-fill"
                 defaultValue={settings?.AzureTenantId}
                 required={authMethod === "azuread"}
                 autoComplete="off"
@@ -114,7 +114,7 @@ export default function AzureAiOptions({ settings }) {
                 type="text"
                 name="AzureClientId"
                 className="border-none bg-theme-settings-input-bg text-white placeholder:text-theme-settings-input-placeholder text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
-                placeholder="76005846-e2ee-410e-885e-e986f9e37135"
+                placeholder="to-fill"
                 defaultValue={settings?.AzureClientId}
                 required={authMethod === "azuread"}
                 autoComplete="off"
@@ -130,7 +130,7 @@ export default function AzureAiOptions({ settings }) {
                 type="password"
                 name="AzureClientSecret"
                 className="border-none bg-theme-settings-input-bg text-white placeholder:text-theme-settings-input-placeholder text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
-                placeholder="DTd8Q~8WMHqH~gM0cVAUu6ndT1dqvzlo_uCDUdyD"
+                placeholder="to-fill"
                 defaultValue={settings?.AzureClientSecret ? "*".repeat(20) : ""}
                 required={authMethod === "azuread"}
                 autoComplete="off"
