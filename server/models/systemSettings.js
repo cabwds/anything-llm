@@ -456,6 +456,12 @@ const SystemSettings = {
       AzureOpenAiEmbeddingModelPref: process.env.EMBEDDING_MODEL_PREF,
       AzureOpenAiTokenLimit: process.env.AZURE_OPENAI_TOKEN_LIMIT || 4096,
       AzureOpenAiModelType: process.env.AZURE_OPENAI_MODEL_TYPE || "default",
+      AzureOpenAiModel: process.env.AZURE_OPENAI_MODEL,
+      // Azure AD Authentication Settings
+      AzureTenantId: process.env.AZURE_TENANT_ID,
+      AzureClientId: process.env.AZURE_CLIENT_ID,
+      AzureClientSecret: !!process.env.AZURE_CLIENT_SECRET,
+      AzureAccessScope: process.env.AZURE_ACCESS_SCOPE || "https://cognitiveservices.azure.com/.default",
 
       // Anthropic Keys
       AnthropicApiKey: !!process.env.ANTHROPIC_API_KEY,
