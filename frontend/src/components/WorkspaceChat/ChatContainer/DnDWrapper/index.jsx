@@ -27,12 +27,13 @@ export const ATTACHMENTS_PROCESSED_EVENT = "ATTACHMENTS_PROCESSED";
 
 export function DnDFileUploaderProvider({ workspace, children }) {
   const [files, setFiles] = useState([]);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(true);
+  const [documentProcessorReady, setDocumentProcessorReady] = useState(false);
   const [dragging, setDragging] = useState(false);
   const { user } = useUser();
 
   useEffect(() => {
-    System.checkDocumentProcessorOnline().then((status) => setReady(status));
+    System.checkDocumentProcessorOnline().then((status) => setDocumentProcessorReady(status));
   }, [user]);
 
   useEffect(() => {
@@ -114,6 +115,20 @@ export function DnDFileUploaderProvider({ workspace, children }) {
       } else {
         // If the user is a default user, we do not want to allow them to upload files.
         if (!!user && user.role === "default") continue;
+        
+        // Check if document processor is online for non-image files
+        if (!documentProcessorReady) {
+          newAccepted.push({
+            uid: v4(),
+            file,
+            contentString: null,
+            status: "failed",
+            error: "Document processor is offline. Only image attachments are supported.",
+            type: "upload",
+          });
+          continue;
+        }
+        
         newAccepted.push({
           uid: v4(),
           file,
@@ -151,6 +166,20 @@ export function DnDFileUploaderProvider({ workspace, children }) {
       } else {
         // If the user is a default user, we do not want to allow them to upload files.
         if (!!user && user.role === "default") continue;
+        
+        // Check if document processor is online for non-image files
+        if (!documentProcessorReady) {
+          newAccepted.push({
+            uid: v4(),
+            file,
+            contentString: null,
+            status: "failed",
+            error: "Document processor is offline. Only image attachments are supported.",
+            type: "upload",
+          });
+          continue;
+        }
+        
         newAccepted.push({
           uid: v4(),
           file,
@@ -177,6 +206,9 @@ export function DnDFileUploaderProvider({ workspace, children }) {
     for (const attachment of newAttachments) {
       // Images/attachments are chat specific.
       if (attachment.type === "attachment") continue;
+      
+      // Skip files that are already marked as failed (e.g., when document processor is offline)
+      if (attachment.status === "failed") continue;
 
       const formData = new FormData();
       formData.append("file", attachment.file, attachment.file.name);
@@ -213,7 +245,7 @@ export function DnDFileUploaderProvider({ workspace, children }) {
 
   return (
     <DndUploaderContext.Provider
-      value={{ files, ready, dragging, setDragging, onDrop, parseAttachments }}
+      value={{ files, ready, dragging, setDragging, onDrop, parseAttachments, documentProcessorReady }}
     >
       {children}
     </DndUploaderContext.Provider>
